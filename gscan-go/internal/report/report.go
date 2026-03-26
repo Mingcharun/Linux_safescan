@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/grayddq/gscan-go/internal/model"
+	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/model"
 )
 
 // Write persists the scan report and legacy diff hashes.
@@ -72,20 +72,31 @@ func LoadHashes(path string) (map[string]struct{}, error) {
 func RenderText(report model.ScanReport) string {
 	var b strings.Builder
 	findings := report.Findings
-	if len(report.NewFindings) > 0 {
+	if report.DiffMode {
 		findings = report.NewFindings
 	}
 
-	b.WriteString("GScan Go Report\n")
+	b.WriteString("Linux Safescan Report\n")
 	b.WriteString(fmt.Sprintf("Version: %s\n", report.Version))
+	b.WriteString(fmt.Sprintf("Author: %s\n", report.Author))
+	b.WriteString(fmt.Sprintf("Repository: %s\n", report.Repository))
 	b.WriteString(fmt.Sprintf("Host: %s (%s)\n", report.Host.Hostname, report.Host.IP))
 	b.WriteString(fmt.Sprintf("OS: %s\n", report.Host.OS))
 	b.WriteString(fmt.Sprintf("Started: %s\n", report.StartedAt.Format("2006-01-02 15:04:05")))
 	b.WriteString(fmt.Sprintf("Finished: %s\n", report.FinishedAt.Format("2006-01-02 15:04:05")))
+	if report.DiffMode {
+		b.WriteString("Mode: diff\n")
+	} else {
+		b.WriteString("Mode: full report\n")
+	}
 	b.WriteString(strings.Repeat("-", 40) + "\n")
 
 	if len(findings) == 0 {
-		b.WriteString("本次扫描未发现明确异常。\n")
+		if report.DiffMode {
+			b.WriteString("本次差异扫描未发现新增异常。\n")
+		} else {
+			b.WriteString("本次扫描未发现明确异常。\n")
+		}
 	} else {
 		for i, finding := range findings {
 			b.WriteString(fmt.Sprintf("[%d][%s] %s / %s\n", i+1, severityLabel(finding.Severity), finding.Category, finding.Name))
@@ -102,13 +113,20 @@ func RenderText(report model.ScanReport) string {
 				b.WriteString(fmt.Sprintf("文件: %s\n", finding.File))
 			}
 			b.WriteString(fmt.Sprintf("详情: %s\n", finding.Info))
-			if finding.Consult != "" {
+			if report.Suggestion && finding.Consult != "" {
 				b.WriteString(fmt.Sprintf("排查参考: %s\n", finding.Consult))
 			}
-			if finding.Programme != "" {
+			if report.Programme && finding.Programme != "" {
 				b.WriteString(fmt.Sprintf("处理建议: %s\n", finding.Programme))
 			}
 			b.WriteString(strings.Repeat("-", 40) + "\n")
+		}
+	}
+
+	if len(report.OpenServices) > 0 {
+		b.WriteString("开放服务参考:\n")
+		for _, line := range report.OpenServices {
+			b.WriteString("- " + line + "\n")
 		}
 	}
 

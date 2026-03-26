@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/grayddq/gscan-go/internal/config"
-	"github.com/grayddq/gscan-go/internal/scanner"
+	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/config"
+	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/scanner"
 )
 
 // RunSearchMode searches files changed during a given time window.

@@ -13,10 +13,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/grayddq/gscan-go/internal/config"
-	"github.com/grayddq/gscan-go/internal/geoip"
-	"github.com/grayddq/gscan-go/internal/model"
-	"github.com/grayddq/gscan-go/internal/rules"
+	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/config"
+	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/geoip"
+	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/model"
+	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/rules"
 )
 
 // Runner is the contract implemented by each scanning module.

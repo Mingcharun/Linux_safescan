@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/grayddq/gscan-go/internal/scanner"
+	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/scanner"
 )
 
 // DiscoverOpenServices returns listening services from ss output.

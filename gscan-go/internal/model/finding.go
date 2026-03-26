@@ -55,6 +55,8 @@ func (f Finding) Fingerprint() string {
 // ScanReport is the top-level persisted output of a run.
 type ScanReport struct {
 	Version      string    `json:"version"`
+	Author       string    `json:"author"`
+	Repository   string    `json:"repository"`
 	StartedAt    time.Time `json:"started_at"`
 	FinishedAt   time.Time `json:"finished_at"`
 	Host         HostInfo  `json:"host"`
@@ -63,4 +65,7 @@ type ScanReport struct {
 	OpenServices []string  `json:"open_services,omitempty"`
 	Timeline     []string  `json:"timeline,omitempty"`
 	Warnings     []string  `json:"warnings,omitempty"`
+	DiffMode     bool      `json:"diff_mode"`
+	Suggestion   bool      `json:"suggestion"`
+	Programme    bool      `json:"programme"`
 }

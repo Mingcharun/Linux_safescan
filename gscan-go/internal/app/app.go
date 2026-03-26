@@ -10,13 +10,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/grayddq/gscan-go/internal/config"
-	"github.com/grayddq/gscan-go/internal/geoip"
-	"github.com/grayddq/gscan-go/internal/model"
-	"github.com/grayddq/gscan-go/internal/report"
-	"github.com/grayddq/gscan-go/internal/rules"
-	"github.com/grayddq/gscan-go/internal/scanner"
-	"github.com/grayddq/gscan-go/internal/scanners"
+	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/config"
+	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/geoip"
+	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/model"
+	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/report"
+	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/rules"
+	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/scanner"
+	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/scanners"
 )
 
 // Run executes the scanner application.
@@ -27,13 +27,12 @@ func Run(ctx context.Context, opts config.Options) error {
 	}
 
 	if opts.LogBackup {
-		fmt.Println("日志打包功能暂未实现。")
-		return nil
+		return backupLogs(opts.OutputRoot)
 	}
 
 	if opts.InstallJob {
-		printCrontab(opts)
-		return nil
+		scheduledHour = opts.JobHour
+		return installCrontab(ctx, opts)
 	}
 
 	if opts.SearchOnly {
@@ -81,6 +80,12 @@ func Run(ctx context.Context, opts config.Options) error {
 	if !opts.DisableLogScan {
 		runners = append(runners, scanners.NewLogScanner())
 	}
+	if !opts.DisableRootkit {
+		runners = append(runners, scanners.NewRootkitScanner())
+	}
+	if !opts.DisableWebshell {
+		runners = append(runners, scanners.NewWebshellScanner())
+	}
 
 	allFindings := make([]model.Finding, 0, 128)
 	for _, runner := range runners {
@@ -98,11 +103,16 @@ func Run(ctx context.Context, opts config.Options) error {
 
 	reportData := model.ScanReport{
 		Version:    config.Version,
+		Author:     config.Author,
+		Repository: config.RepositoryURL,
 		StartedAt:  startedAt,
 		FinishedAt: time.Now(),
 		Host:       host,
 		Findings:   dedupeFindings(allFindings),
 		Warnings:   append([]string{}, rt.Warnings...),
+		DiffMode:   opts.Diff,
+		Suggestion: opts.Suggestion,
+		Programme:  opts.Programme,
 	}
 
 	if opts.Diff {
@@ -127,14 +137,6 @@ func Run(ctx context.Context, opts config.Options) error {
 	fmt.Printf("主机信息: %s / %s / %s\n", reportData.Host.Hostname, reportData.Host.IP, reportData.Host.OS)
 	fmt.Printf("扫描完成，共发现 %d 条异常，结果保存在 %s\n", len(displayFindings(reportData, opts.Diff)), opts.OutputRoot)
 	return nil
-}
-
-func printCrontab(opts config.Options) {
-	if opts.JobHour > 0 {
-		fmt.Printf("* */%d * * * cd %s && ./gscan --dif\n", opts.JobHour, mustCWD())
-		return
-	}
-	fmt.Printf("0 0 * * * cd %s && ./gscan --dif\n", mustCWD())
 }
 
 func hostname() string {
@@ -177,7 +179,7 @@ func buildTimeline(findings []model.Finding) []string {
 		if when == "" {
 			when = "未知时间"
 		}
-		lines = append(lines, fmt.Sprintf("[%d][%s] %s", i+1, when, finding.Info))
+		lines = append(lines, fmt.Sprintf("[%d][%s][%s] %s / %s", i+1, when, severityText(finding.Severity), finding.Category, finding.Info))
 	}
 	return lines
 }
@@ -189,10 +191,13 @@ func displayFindings(reportData model.ScanReport, diff bool) []model.Finding {
 	return reportData.Findings
 }
 
-func mustCWD() string {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return "."
+func severityText(level model.Severity) string {
+	switch level {
+	case model.SeverityRisk:
+		return "风险"
+	case model.SeveritySuspicious:
+		return "可疑"
+	default:
+		return "信息"
 	}
-	return cwd
 }

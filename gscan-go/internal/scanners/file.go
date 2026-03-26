@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/grayddq/gscan-go/internal/model"
-	"github.com/grayddq/gscan-go/internal/scanner"
+	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/model"
+	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/scanner"
 )
 
 type fileScanner struct{}
