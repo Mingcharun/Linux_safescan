@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/config"
+	"github.com/Mingcharun/Linux_safescan/internal/config"
 )
 
 func installCrontab(_ context.Context, opts config.Options) error {

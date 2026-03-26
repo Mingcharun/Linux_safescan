@@ -8,7 +8,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/scanner"
+	"github.com/Mingcharun/Linux_safescan/internal/scanner"
 )
 
 // DiscoverWebRoots finds likely web roots from running services and common defaults.

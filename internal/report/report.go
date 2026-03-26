@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/model"
+	"github.com/Mingcharun/Linux_safescan/internal/model"
 )
 
 // Write persists the scan report and legacy diff hashes.

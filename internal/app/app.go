@@ -10,13 +10,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/config"
-	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/geoip"
-	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/model"
-	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/report"
-	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/rules"
-	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/scanner"
-	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/scanners"
+	"github.com/Mingcharun/Linux_safescan/internal/config"
+	"github.com/Mingcharun/Linux_safescan/internal/geoip"
+	"github.com/Mingcharun/Linux_safescan/internal/model"
+	"github.com/Mingcharun/Linux_safescan/internal/report"
+	"github.com/Mingcharun/Linux_safescan/internal/rules"
+	"github.com/Mingcharun/Linux_safescan/internal/scanner"
+	"github.com/Mingcharun/Linux_safescan/internal/scanners"
 )
 
 // Run executes the scanner application.

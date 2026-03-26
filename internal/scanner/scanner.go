@@ -13,10 +13,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/config"
-	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/geoip"
-	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/model"
-	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/rules"
+	"github.com/Mingcharun/Linux_safescan/internal/config"
+	"github.com/Mingcharun/Linux_safescan/internal/geoip"
+	"github.com/Mingcharun/Linux_safescan/internal/model"
+	"github.com/Mingcharun/Linux_safescan/internal/rules"
 )
 
 // Runner is the contract implemented by each scanning module.
@@ -70,7 +70,14 @@ func (rt *Runtime) AnalyzeFile(path string) string {
 	}
 
 	base := filepath.Base(path)
-	if strings.Contains(path, "gscan-go") || strings.Contains(path, ".jpg") || strings.Contains(path, ".log") || strings.Contains(path, " ") {
+	cleanPath := filepath.ToSlash(path)
+	switch {
+	case strings.Contains(cleanPath, "/.git/"),
+		strings.Contains(cleanPath, "/assets/"),
+		strings.Contains(cleanPath, "/runtime/"),
+		strings.HasSuffix(strings.ToLower(cleanPath), ".jpg"),
+		strings.HasSuffix(strings.ToLower(cleanPath), ".log"),
+		strings.Contains(cleanPath, " "):
 		return ""
 	}
 	if base == "" {

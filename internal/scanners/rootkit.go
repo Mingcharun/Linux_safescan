@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/model"
-	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/rules"
-	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/scanner"
+	"github.com/Mingcharun/Linux_safescan/internal/model"
+	"github.com/Mingcharun/Linux_safescan/internal/rules"
+	"github.com/Mingcharun/Linux_safescan/internal/scanner"
 )
 
 type rootkitScanner struct{}

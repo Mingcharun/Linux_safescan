@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/app"
-	"github.com/Mingcharun/Linux_safescan/gscan-go/internal/config"
+	"github.com/Mingcharun/Linux_safescan/internal/app"
+	"github.com/Mingcharun/Linux_safescan/internal/config"
 )
 
 func main() {
