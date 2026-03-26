@@ -70,7 +70,7 @@ func (rt *Runtime) AnalyzeFile(path string) string {
 	}
 
 	base := filepath.Base(path)
-	if strings.Contains(path, "GScan") || strings.Contains(path, "gscan-go") || strings.Contains(path, ".jpg") || strings.Contains(path, ".log") || strings.Contains(path, " ") {
+	if strings.Contains(path, "gscan-go") || strings.Contains(path, ".jpg") || strings.Contains(path, ".log") || strings.Contains(path, " ") {
 		return ""
 	}
 	if base == "" {

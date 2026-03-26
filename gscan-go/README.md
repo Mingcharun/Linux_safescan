@@ -4,15 +4,15 @@
 
 仓库地址：[https://github.com/Mingcharun/Linux_safescan](https://github.com/Mingcharun/Linux_safescan)
 
-这是对原始 [GScan](../GScan) 的 Go 重构版。当前版本已经不再只是骨架，而是一个可运行、可扩展、可继续增强的 Linux 主机应急扫描工具。
+这是对原始 GScan 的 Go 重构版。当前版本已经不再只是骨架，而是一个可运行、可扩展、可继续增强的 Linux 主机应急扫描工具，并且规则与离线库已经内置到当前项目。
 
 ## 当前已完成
 
 - CLI 能力：`--full`、`--dif`、`--sug`、`--pro`、`--time`、`--job`、`--log`
-- 规则库加载：复用原项目 `lib/malware` 文本规则
-- 17mon GeoIP 离线库读取：复用原项目 `17monipdb.dat`
-- Rootkit 规则复用：运行时解析原项目 `Rootkit_Analysis.py`
-- Webshell 规则复用：运行时解析原项目 `webshell_rule/*.yar`
+- 规则库加载：内置 `assets/malware` 文本规则
+- 17mon GeoIP 离线库读取：内置 `assets/geoip/17monipdb.dat`
+- Rootkit 规则复用：默认加载 `assets/rootkits.json`，兼容旧版 `Rootkit_Analysis.py`
+- Webshell 规则复用：内置 `assets/webshell_rule/*.yar`
 - 已迁移扫描器：
   - 主机信息获取
   - 系统初始化 alias 检查
@@ -64,12 +64,12 @@ go run ./cmd/gscan --log
 go run ./cmd/gscan --time="2026-03-20 00:00:00~2026-03-20 23:59:59"
 ```
 
-如果你当前目录结构和本工作区一致，程序会默认复用：
+默认情况下程序直接使用当前项目内置资产：
 
-- `../GScan/lib/malware`
-- `../GScan/lib/core/ip/17monipdb.dat`
-- `../GScan/lib/plugins/Rootkit_Analysis.py`
-- `../GScan/lib/plugins/webshell_rule`
+- `assets/malware`
+- `assets/geoip/17monipdb.dat`
+- `assets/rootkits.json`
+- `assets/webshell_rule`
 
 也可以手动指定：
 
@@ -77,6 +77,6 @@ go run ./cmd/gscan --time="2026-03-20 00:00:00~2026-03-20 23:59:59"
 go run ./cmd/gscan \
   --rules-dir=/path/to/malware \
   --geoip-db=/path/to/17monipdb.dat \
-  --rootkit-source=/path/to/Rootkit_Analysis.py \
+  --rootkit-source=/path/to/rootkits.json \
   --webshell-rules=/path/to/webshell_rule
 ```

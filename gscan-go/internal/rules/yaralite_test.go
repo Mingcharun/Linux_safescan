@@ -13,7 +13,7 @@ func TestLoadYaraLite(t *testing.T) {
 	if !ok {
 		t.Fatal("failed to resolve caller")
 	}
-	path := filepath.Clean(filepath.Join(filepath.Dir(currentFile), "..", "..", "..", "GScan", "lib", "plugins", "webshell_rule"))
+	path := filepath.Clean(filepath.Join(filepath.Dir(currentFile), "..", "..", "assets", "webshell_rule"))
 
 	corpus, err := LoadYaraLite(path)
 	if err != nil {

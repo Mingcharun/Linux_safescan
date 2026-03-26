@@ -48,10 +48,10 @@ func Parse(args []string) (Options, error) {
 	}
 
 	moduleRoot := filepath.Clean(cwd)
-	defaultRules := filepath.Join(moduleRoot, "..", "GScan", "lib", "malware")
-	defaultGeoIP := filepath.Join(moduleRoot, "..", "GScan", "lib", "core", "ip", "17monipdb.dat")
-	defaultRootkit := filepath.Join(moduleRoot, "..", "GScan", "lib", "plugins", "Rootkit_Analysis.py")
-	defaultWebshell := filepath.Join(moduleRoot, "..", "GScan", "lib", "plugins", "webshell_rule")
+	defaultRules := filepath.Join(moduleRoot, "assets", "malware")
+	defaultGeoIP := filepath.Join(moduleRoot, "assets", "geoip", "17monipdb.dat")
+	defaultRootkit := filepath.Join(moduleRoot, "assets", "rootkits.json")
+	defaultWebshell := filepath.Join(moduleRoot, "assets", "webshell_rule")
 	defaultOutput := filepath.Join(moduleRoot, "runtime")
 	defaultSystemHashDB := filepath.Join(defaultOutput, "db", "system_hashes.txt")
 	defaultFindingHashDB := filepath.Join(defaultOutput, "db", "findings_hashes.txt")
@@ -73,7 +73,7 @@ func Parse(args []string) (Options, error) {
 	fs.StringVar(&opts.OutputRoot, "output", defaultOutput, "output directory")
 	fs.StringVar(&opts.RulesDir, "rules-dir", defaultRules, "malware indicator directory")
 	fs.StringVar(&opts.GeoIPDB, "geoip-db", defaultGeoIP, "17mon IP database path")
-	fs.StringVar(&opts.RootkitSource, "rootkit-source", defaultRootkit, "Rootkit_Analysis.py path")
+	fs.StringVar(&opts.RootkitSource, "rootkit-source", defaultRootkit, "rootkit rule source path (.json or Rootkit_Analysis.py)")
 	fs.StringVar(&opts.WebshellRules, "webshell-rules", defaultWebshell, "webshell yara rule directory")
 	fs.StringVar(&opts.SystemHashDB, "hash-db", defaultSystemHashDB, "hash baseline file for system binaries")
 	fs.StringVar(&opts.FindingHashDB, "finding-hash-db", defaultFindingHashDB, "hash file for diff mode findings")

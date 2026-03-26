@@ -1,8 +1,10 @@
 package rules
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
@@ -21,7 +23,20 @@ type RootkitCorpus struct {
 	LKMNames []string
 }
 
-// LoadRootkits parses the original Python Rootkit_Analysis.py definitions.
+type rootkitJSONCorpus struct {
+	Rules    []rootkitJSONRule `json:"rules"`
+	LKMNames []string          `json:"lkm_names"`
+}
+
+type rootkitJSONRule struct {
+	Name  string   `json:"name"`
+	Files []string `json:"file"`
+	Dirs  []string `json:"dir"`
+	KSyms []string `json:"ksyms"`
+}
+
+// LoadRootkits loads rootkit rules from either the bundled JSON asset or the
+// original Python Rootkit_Analysis.py source.
 func LoadRootkits(path string) (*RootkitCorpus, error) {
 	out := &RootkitCorpus{
 		Rules:    []RootkitRule{},
@@ -34,8 +49,42 @@ func LoadRootkits(path string) (*RootkitCorpus, error) {
 		}
 		return nil, fmt.Errorf("read rootkit source: %w", err)
 	}
-	content := string(data)
+	if strings.EqualFold(filepath.Ext(path), ".json") {
+		return loadRootkitsFromJSON(data)
+	}
+	return loadRootkitsFromPython(data), nil
+}
 
+func loadRootkitsFromJSON(data []byte) (*RootkitCorpus, error) {
+	var src rootkitJSONCorpus
+	if err := json.Unmarshal(data, &src); err != nil {
+		return nil, fmt.Errorf("decode rootkit json: %w", err)
+	}
+
+	out := &RootkitCorpus{
+		Rules:    make([]RootkitRule, 0, len(src.Rules)),
+		LKMNames: append([]string{}, src.LKMNames...),
+	}
+	for _, rule := range src.Rules {
+		if strings.TrimSpace(rule.Name) == "" {
+			continue
+		}
+		out.Rules = append(out.Rules, RootkitRule{
+			Name:  rule.Name,
+			Files: append([]string{}, rule.Files...),
+			Dirs:  append([]string{}, rule.Dirs...),
+			KSyms: append([]string{}, rule.KSyms...),
+		})
+	}
+	return out, nil
+}
+
+func loadRootkitsFromPython(data []byte) *RootkitCorpus {
+	content := string(data)
+	out := &RootkitCorpus{
+		Rules:    []RootkitRule{},
+		LKMNames: []string{},
+	}
 	blocks := extractPythonDictBlocks(content)
 	for _, block := range blocks {
 		rule := RootkitRule{
@@ -54,7 +103,7 @@ func LoadRootkits(path string) (*RootkitCorpus, error) {
 	if len(lkmBlock) == 2 {
 		out.LKMNames = extractQuotedValues(lkmBlock[1])
 	}
-	return out, nil
+	return out
 }
 
 func extractPythonDictBlocks(content string) []string {
