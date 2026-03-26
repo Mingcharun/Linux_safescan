@@ -1,0 +1,6 @@
+GScan/
+.DS_Store
+gscan-go/runtime/
+gscan-go/gscan
+gscan-go/*.out
+gscan-go/coverage.txt
