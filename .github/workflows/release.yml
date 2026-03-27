@@ -1,0 +1,37 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux]
+        goarch: [amd64, arm64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+      - run: go mod tidy
+      - run: mkdir -p dist
+      - env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+        run: |
+          go build -v -o linux_safescan -ldflags "-s -w -X github.com/Mingcharun/Linux_safescan/internal/config.Version=${GITHUB_REF_NAME}+${GITHUB_SHA::7}" ./cmd/linux_safescan
+          tar -czf dist/linux_safescan_${{ matrix.goos }}_${{ matrix.goarch }}.tar.gz linux_safescan
+          sha256sum dist/linux_safescan_${{ matrix.goos }}_${{ matrix.goarch }}.tar.gz >> dist/SHA256SUMS
+      - uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/linux_safescan_${{ matrix.goos }}_${{ matrix.goarch }}.tar.gz
+            dist/SHA256SUMS
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
