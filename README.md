@@ -11,8 +11,7 @@
 
 </div>
 
-> Linux_safescan 是一款以 Go 实现的主机安全巡检与应急响应工具。  
-> 当前版本已完成从旧版实现到全新风格的重构：命令行、输出格式、报告版式均已全面重设计，避免与旧版混淆。
+> Linux_safescan 是一款以 Go 实现的主机安全巡检与应急响应工具：聚焦高质量证据采集、结构化报告与可操作建议，面向被黑应急和常规安全检测两大场景。
 
 ## 为什么选择 Linux_safescan
 
@@ -39,7 +38,7 @@ Linux_safescan 提供覆盖主机侧常见风险面的全量扫描能力：
 | --- | --- | --- |
 | IOC rules | Ready | 内置 `assets/malware` 文本指纹 |
 | GeoIP | Ready | 内置 `assets/geoip/17monipdb.dat` |
-| Rootkit scan | Ready | 默认加载 `assets/rootkits.json`，兼容旧版 Python 规则源 |
+| Rootkit scan | Ready | 默认加载 `assets/rootkits.json` |
 | Web content scan | Ready | 内置 `assets/webshell_rule/*.yar` 轻量匹配 |
 | Diff mode | Ready | 对比上次结果，仅输出新增异常（NewFindings） |
 | Host report | Ready | 英文文本报告与 JSON 输出 |
@@ -58,6 +57,7 @@ go run ./cmd/linux_safescan
 ```bash
 go run ./cmd/linux_safescan --full
 go run ./cmd/linux_safescan --dif
+go run ./cmd/linux_safescan --triage
 go run ./cmd/linux_safescan --sug --pro
 go run ./cmd/linux_safescan --job --hour=2
 go run ./cmd/linux_safescan --log
@@ -158,7 +158,7 @@ go run ./cmd/linux_safescan \
 | `--overseas` | 跳过境外 IP 判断（性能优化/离线场景） |
 | `--rules-dir` | 恶意特征规则路径（默认 `assets/malware`） |
 | `--geoip-db` | 17mon IP 数据库路径 |
-| `--rootkit-source` | Rootkit 规则源（`*.json` 或旧版源码） |
+| `--rootkit-source` | Rootkit 规则源（`*.json`） |
 | `--webshell-rules` | Web 内容规则目录 |
 | `--output` | 输出根目录（默认 `outbox/`） |
 | `--finding-hash-db` | Diff 模式历史指纹文件 |
@@ -166,6 +166,9 @@ go run ./cmd/linux_safescan \
 | `--disable-log-scan` | 禁用登录日志分析 |
 | `--disable-webshell` | 禁用 Web 内容扫描 |
 | `--disable-rootkit` | 禁用 Rootkit 扫描 |
+| `--triage` | 启用快速分诊（关闭 Rootkit/Webshell 深扫） |
+| `--cpu-threshold` | CPU 异常阈值（默认 70） |
+| `--mem-threshold` | 内存异常阈值（默认 70） |
 
 ## 输出结构说明
 
