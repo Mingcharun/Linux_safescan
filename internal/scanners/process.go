@@ -27,7 +27,7 @@ func (s *processScanner) Run(ctx context.Context, rt *scanner.Runtime) ([]model.
 	}
 
 	for _, proc := range processes {
-		if proc.CPU > 70 {
+		if proc.CPU > float64(rt.Options.CPUThreshold) {
 			findings = append(findings, model.Finding{
 				Category:  s.Name(),
 				Name:      "High CPU usage",
@@ -40,7 +40,7 @@ func (s *processScanner) Run(ctx context.Context, rt *scanner.Runtime) ([]model.
 				CreatedAt: time.Now(),
 			})
 		}
-		if proc.MEM > 70 {
+		if proc.MEM > float64(rt.Options.MEMThreshold) {
 			findings = append(findings, model.Finding{
 				Category:  s.Name(),
 				Name:      "High memory usage",

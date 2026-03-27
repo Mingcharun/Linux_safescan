@@ -10,7 +10,8 @@ import (
 	"strings"
 )
 
-const Version = "v0.1.0-go"
+var Version = "v0.1.0-go"
+
 const Author = "PINGXCpost"
 const RepositoryURL = "https://github.com/Mingcharun/Linux_safescan"
 
@@ -38,6 +39,9 @@ type Options struct {
 	DisableLogScan  bool
 	DisableWebshell bool
 	DisableRootkit  bool
+	Triage          bool
+	CPUThreshold    int
+	MEMThreshold    int
 }
 
 // Parse converts command-line args into Options.
@@ -80,6 +84,9 @@ func Parse(args []string) (Options, error) {
 	fs.BoolVar(&opts.DisableLogScan, "disable-log-scan", false, "disable login log analysis")
 	fs.BoolVar(&opts.DisableWebshell, "disable-webshell", false, "disable webshell scanning")
 	fs.BoolVar(&opts.DisableRootkit, "disable-rootkit", false, "disable rootkit scanning")
+	fs.BoolVar(&opts.Triage, "triage", false, "enable fast triage mode (disable heavy scans)")
+	fs.IntVar(&opts.CPUThreshold, "cpu-threshold", 70, "CPU usage threshold percentage for anomaly")
+	fs.IntVar(&opts.MEMThreshold, "mem-threshold", 70, "memory usage threshold percentage for anomaly")
 
 	var rawHour string
 	fs.StringVar(&rawHour, "hour", "0", "run scheduled scan every N hours")

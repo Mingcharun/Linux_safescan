@@ -75,6 +75,7 @@ func (rt *Runtime) AnalyzeFile(path string) string {
 	case strings.Contains(cleanPath, "/.git/"),
 		strings.Contains(cleanPath, "/assets/"),
 		strings.Contains(cleanPath, "/runtime/"),
+		strings.Contains(cleanPath, "/outbox/"),
 		strings.HasSuffix(strings.ToLower(cleanPath), ".jpg"),
 		strings.HasSuffix(strings.ToLower(cleanPath), ".log"),
 		strings.Contains(cleanPath, " "):

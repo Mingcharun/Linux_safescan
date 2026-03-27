@@ -39,6 +39,12 @@ func Run(ctx context.Context, opts config.Options) error {
 		return scanners.RunSearchMode(ctx, opts)
 	}
 
+	if opts.Triage {
+		opts.Full = false
+		opts.DisableRootkit = true
+		opts.DisableWebshell = true
+	}
+
 	if err := os.MkdirAll(filepath.Join(opts.OutputRoot, "db"), 0o755); err != nil {
 		return fmt.Errorf("create output db dir: %w", err)
 	}
