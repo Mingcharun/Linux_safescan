@@ -17,7 +17,7 @@ type sysInitScanner struct{}
 // NewSysInitScanner creates the alias scanner.
 func NewSysInitScanner() scanner.Runner { return &sysInitScanner{} }
 
-func (s *sysInitScanner) Name() string { return "系统初始化检测" }
+func (s *sysInitScanner) Name() string { return "Shell Alias Checks" }
 
 func (s *sysInitScanner) Run(ctx context.Context, rt *scanner.Runtime) ([]model.Finding, error) {
 	_ = ctx
@@ -52,14 +52,14 @@ func (s *sysInitScanner) Run(ctx context.Context, rt *scanner.Runtime) ([]model.
 					mtime, user := scanner.FileMeta(file)
 					findings = append(findings, model.Finding{
 						Category:  s.Name(),
-						Name:      "初始化 alias 检查",
+						Name:      "Initialization alias check",
 						File:      file,
 						Time:      mtime,
 						User:      user,
-						Info:      "存在可疑 alias 设置: " + line,
+						Info:      "Suspicious alias detected: " + line,
 						Consult:   "[1] alias [2] cat " + file,
 						Severity:  model.SeveritySuspicious,
-						Programme: "vi " + file + " # 删除恶意 alias 配置",
+						Programme: "vi " + file + " # remove malicious alias",
 						CreatedAt: time.Now(),
 					})
 				}

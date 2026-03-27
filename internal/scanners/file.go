@@ -20,19 +20,19 @@ type fileScanner struct{}
 // NewFileScanner creates the file scanner.
 func NewFileScanner() scanner.Runner { return &fileScanner{} }
 
-func (s *fileScanner) Name() string { return "文件类安全检测" }
+func (s *fileScanner) Name() string { return "Filesystem Integrity" }
 
 func (s *fileScanner) Run(ctx context.Context, rt *scanner.Runtime) ([]model.Finding, error) {
 	findings := make([]model.Finding, 0)
 
 	baseline, err := loadHashBaseline(rt.Options.SystemHashDB)
 	if err != nil {
-		rt.Warn("读取文件基线失败: %v", err)
+		rt.Warn("failed to read baseline: %v", err)
 	}
 	current := s.currentHashes()
 	if len(baseline) == 0 {
 		if err := writeHashBaseline(rt.Options.SystemHashDB, current); err != nil {
-			rt.Warn("初始化文件基线失败: %v", err)
+			rt.Warn("failed to initialize baseline: %v", err)
 		}
 	} else {
 		for path, hash := range current {
@@ -40,30 +40,30 @@ func (s *fileScanner) Run(ctx context.Context, rt *scanner.Runtime) ([]model.Fin
 			if ok && old == hash {
 				continue
 			}
-			action := "Create"
+			action := "CREATE"
 			if ok {
-				action = "Edit"
+				action = "MODIFY"
 			}
-			info := fmt.Sprintf("此操作%s重要可执行文件 %s，文件 hash: %s", map[string]string{"Create": "创建了", "Edit": "修改了"}[action], path, hash)
+			info := fmt.Sprintf("Detected %s of protected binary %s (hash: %s)", action, path, hash)
 			findings = append(findings, model.Finding{
 				Category:  s.Name(),
-				Name:      "系统重要文件 hash 对比",
+				Name:      "Protected binary hash diff",
 				File:      path,
 				Info:      info,
 				Consult:   "[1] strings " + path + " [2] cat " + path,
 				Severity:  model.SeverityRisk,
-				Programme: "rm " + path + " # 删除恶意文件",
+				Programme: "rm " + path + " # remove malicious file",
 				CreatedAt: time.Now(),
 			})
 		}
 		if err := writeHashBaseline(rt.Options.SystemHashDB, current); err != nil {
-			rt.Warn("更新文件基线失败: %v", err)
+			rt.Warn("failed to update baseline: %v", err)
 		}
 	}
 
 	findings = append(findings, s.scanImportantBinaries(rt)...)
-	findings = append(findings, s.scanRoots(rt, "临时目录文件安全扫描", []string{"/tmp", "/var/tmp", "/dev/shm"})...)
-	findings = append(findings, s.scanRoots(rt, "用户目录文件安全扫描", []string{"/home", "/root"})...)
+	findings = append(findings, s.scanRoots(rt, "Temp directory sweep", []string{"/tmp", "/var/tmp", "/dev/shm"})...)
+	findings = append(findings, s.scanRoots(rt, "Home directory sweep", []string{"/home", "/root"})...)
 	findings = append(findings, s.scanHidden(ctx)...)
 
 	return findings, nil
@@ -81,12 +81,12 @@ func (s *fileScanner) scanImportantBinaries(rt *scanner.Runtime) []model.Finding
 			if desc := rt.AnalyzeFile(path); desc != "" {
 				findings = append(findings, model.Finding{
 					Category:  s.Name(),
-					Name:      "系统可执行文件安全扫描",
+					Name:      "System binary analysis",
 					File:      path,
 					Info:      desc,
 					Consult:   "[1] rpm -qa " + path + " [2] strings " + path,
 					Severity:  model.SeverityRisk,
-					Programme: "rm " + path + " # 删除恶意文件",
+					Programme: "rm " + path + " # remove malicious file",
 					CreatedAt: time.Now(),
 				})
 			}
@@ -108,7 +108,7 @@ func (s *fileScanner) scanRoots(rt *scanner.Runtime, name string, roots []string
 					Info:      desc,
 					Consult:   "[1] rpm -qa " + path + " [2] strings " + path,
 					Severity:  model.SeverityRisk,
-					Programme: "rm " + path + " # 删除恶意文件",
+					Programme: "rm " + path + " # remove malicious file",
 					CreatedAt: time.Now(),
 				})
 			}
@@ -130,12 +130,12 @@ func (s *fileScanner) scanHidden(ctx context.Context) []model.Finding {
 		}
 		findings = append(findings, model.Finding{
 			Category:  s.Name(),
-			Name:      "可疑隐藏文件安全扫描",
+			Name:      "Hidden file sweep",
 			File:      file,
-			Info:      "文件属于可疑隐藏文件: " + file,
+			Info:      "Suspicious hidden file: " + file,
 			Consult:   "[1] ls -l " + file + " [2] strings " + file,
 			Severity:  model.SeveritySuspicious,
-			Programme: "rm " + file + " # 删除恶意文件",
+			Programme: "rm " + file + " # remove malicious file",
 			CreatedAt: time.Now(),
 		})
 	}

@@ -22,7 +22,7 @@ func installCrontab(_ context.Context, opts config.Options) error {
 		current = string(out)
 	}
 	if strings.Contains(current, line) {
-		fmt.Println("定时任务已存在，无需重复写入。")
+		fmt.Println("Scheduled job already exists; no changes applied.")
 		return nil
 	}
 
@@ -39,21 +39,21 @@ func installCrontab(_ context.Context, opts config.Options) error {
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("write crontab: %w (%s)", err, strings.TrimSpace(string(out)))
 	}
-	fmt.Println("定时任务写入成功。")
+	fmt.Println("Scheduled job installed successfully.")
 	return nil
 }
 
 func cronLine() string {
 	exe, err := os.Executable()
 	if err != nil {
-		exe = "./gscan"
+		exe = "./linux_safescan"
 	}
 	if strings.Contains(exe, "go-build") {
 		cwd, _ := os.Getwd()
-		exe = filepath.Join(cwd, "gscan")
+		exe = filepath.Join(cwd, "linux_safescan")
 	}
 	if strings.TrimSpace(exe) == "" {
-		exe = "./gscan"
+		exe = "./linux_safescan"
 	}
 	if hour := currentHour(); hour > 0 {
 		return fmt.Sprintf("* */%d * * * %s --dif", hour, exe)
@@ -87,7 +87,7 @@ func backupLogs(outputRoot string) error {
 	for _, path := range logCandidates() {
 		_ = addPathToTar(tw, path)
 	}
-	fmt.Printf("安全日志已打包到 %s\n", archivePath)
+	fmt.Printf("Security logs archived to %s\n", archivePath)
 	return nil
 }
 

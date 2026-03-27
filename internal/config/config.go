@@ -52,11 +52,11 @@ func Parse(args []string) (Options, error) {
 	defaultGeoIP := filepath.Join(moduleRoot, "assets", "geoip", "17monipdb.dat")
 	defaultRootkit := filepath.Join(moduleRoot, "assets", "rootkits.json")
 	defaultWebshell := filepath.Join(moduleRoot, "assets", "webshell_rule")
-	defaultOutput := filepath.Join(moduleRoot, "runtime")
+	defaultOutput := filepath.Join(moduleRoot, "outbox")
 	defaultSystemHashDB := filepath.Join(defaultOutput, "db", "system_hashes.txt")
 	defaultFindingHashDB := filepath.Join(defaultOutput, "db", "findings_hashes.txt")
 
-	fs := flag.NewFlagSet("gscan", flag.ContinueOnError)
+	fs := flag.NewFlagSet("linux_safescan", flag.ContinueOnError)
 	fs.SetOutput(os.Stderr)
 
 	var opts Options

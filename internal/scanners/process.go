@@ -17,7 +17,7 @@ type processScanner struct{}
 // NewProcessScanner creates the process scanner.
 func NewProcessScanner() scanner.Runner { return &processScanner{} }
 
-func (s *processScanner) Name() string { return "进程类安全检测" }
+func (s *processScanner) Name() string { return "Process Anomalies" }
 
 func (s *processScanner) Run(ctx context.Context, rt *scanner.Runtime) ([]model.Finding, error) {
 	findings := make([]model.Finding, 0)
@@ -30,52 +30,52 @@ func (s *processScanner) Run(ctx context.Context, rt *scanner.Runtime) ([]model.
 		if proc.CPU > 70 {
 			findings = append(findings, model.Finding{
 				Category:  s.Name(),
-				Name:      "CPU 过载扫描",
+				Name:      "High CPU usage",
 				PID:       proc.PID,
 				User:      proc.User,
-				Info:      "进程使用 CPU 过大: " + proc.Cmd,
+				Info:      "Process using excessive CPU: " + proc.Cmd,
 				Consult:   "[1] ps -efwww",
 				Severity:  model.SeveritySuspicious,
-				Programme: "kill " + proc.PID + " # 关闭恶意进程",
+				Programme: "kill " + proc.PID + " # terminate process",
 				CreatedAt: time.Now(),
 			})
 		}
 		if proc.MEM > 70 {
 			findings = append(findings, model.Finding{
 				Category:  s.Name(),
-				Name:      "内存过载扫描",
+				Name:      "High memory usage",
 				PID:       proc.PID,
 				User:      proc.User,
-				Info:      "进程使用内存过大: " + proc.Cmd,
+				Info:      "Process using excessive memory: " + proc.Cmd,
 				Consult:   "[1] ps -efwww",
 				Severity:  model.SeveritySuspicious,
-				Programme: "kill " + proc.PID + " # 关闭恶意进程",
+				Programme: "kill " + proc.PID + " # terminate process",
 				CreatedAt: time.Now(),
 			})
 		}
 		if scanner.CheckShell(proc.Cmd) {
 			findings = append(findings, model.Finding{
 				Category:  s.Name(),
-				Name:      "反弹 shell 类进程安全扫描",
+				Name:      "Reverse shell-like process",
 				PID:       proc.PID,
 				User:      proc.User,
-				Info:      "对应进程信息: " + proc.Cmd,
+				Info:      "Suspicious process: " + proc.Cmd,
 				Consult:   "[1] ps -efwww",
 				Severity:  model.SeverityRisk,
-				Programme: "kill " + proc.PID + " # 关闭恶意进程",
+				Programme: "kill " + proc.PID + " # terminate process",
 				CreatedAt: time.Now(),
 			})
 		}
 		if looksSuspiciousProcess(proc.Cmd) {
 			findings = append(findings, model.Finding{
 				Category:  s.Name(),
-				Name:      "可疑进程信息扫描",
+				Name:      "Suspicious process commandline",
 				PID:       proc.PID,
 				User:      proc.User,
 				Info:      proc.Cmd,
 				Consult:   "[1] ps -efwww",
 				Severity:  model.SeveritySuspicious,
-				Programme: "kill " + proc.PID + " # 关闭恶意进程",
+				Programme: "kill " + proc.PID + " # terminate process",
 				CreatedAt: time.Now(),
 			})
 		}
@@ -86,14 +86,14 @@ func (s *processScanner) Run(ctx context.Context, rt *scanner.Runtime) ([]model.
 			if desc := rt.AnalyzeFile(target); desc != "" {
 				findings = append(findings, model.Finding{
 					Category:  s.Name(),
-					Name:      "exe 程序进程安全扫描",
+					Name:      "Executable image analysis",
 					File:      target,
 					PID:       proc.PID,
 					User:      proc.User,
 					Info:      desc,
 					Consult:   "[1] ls -a " + exePath + " [2] strings " + exePath,
 					Severity:  model.SeverityRisk,
-					Programme: "kill " + proc.PID + " # 关闭恶意进程",
+					Programme: "kill " + proc.PID + " # terminate process",
 					CreatedAt: time.Now(),
 				})
 			}
@@ -126,12 +126,12 @@ func (s *processScanner) scanHiddenProcesses(ctx context.Context) []model.Findin
 		}
 		findings = append(findings, model.Finding{
 			Category:  s.Name(),
-			Name:      "隐藏进程扫描",
+			Name:      "Hidden process detection",
 			PID:       pid,
-			Info:      fmt.Sprintf("进程 ID %s 隐藏了进程信息，未出现在进程列表中", pid),
+			Info:      fmt.Sprintf("Process %s not visible in ps output (possible hidden process)", pid),
 			Consult:   "[1] cat /proc/$$/mountinfo [2] umount /proc/" + pid + " [3] ps -ef | grep " + pid,
 			Severity:  model.SeverityRisk,
-			Programme: "umount /proc/" + pid + " && kill " + pid + " # 关闭隐藏进程并结束进程",
+			Programme: "umount /proc/" + pid + " && kill " + pid + " # unmount and terminate",
 			CreatedAt: time.Now(),
 		})
 	}

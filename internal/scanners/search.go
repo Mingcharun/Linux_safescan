@@ -31,6 +31,6 @@ func RunSearchMode(ctx context.Context, opts config.Options) error {
 		return err
 	}
 
-	fmt.Printf("时间周期: %s\n搜索结果: 共发现 %d 处文件或目录发生创建和改动\n结果详情: %s\n", opts.TimeRange, len(lines), logPath)
+	fmt.Printf("Time window: %s\nChanged paths: %d\nDetails: %s\n", opts.TimeRange, len(lines), logPath)
 	return nil
 }

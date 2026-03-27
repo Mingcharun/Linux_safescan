@@ -91,7 +91,7 @@ func Run(ctx context.Context, opts config.Options) error {
 	for _, runner := range runners {
 		findings, err := runner.Run(ctx, rt)
 		if err != nil {
-			rt.Warn("%s 扫描失败: %v", runner.Name(), err)
+			rt.Warn("%s scan failed: %v", runner.Name(), err)
 			continue
 		}
 		allFindings = append(allFindings, findings...)
@@ -134,8 +134,8 @@ func Run(ctx context.Context, opts config.Options) error {
 		return err
 	}
 
-	fmt.Printf("主机信息: %s / %s / %s\n", reportData.Host.Hostname, reportData.Host.IP, reportData.Host.OS)
-	fmt.Printf("扫描完成，共发现 %d 条异常，结果保存在 %s\n", len(displayFindings(reportData, opts.Diff)), opts.OutputRoot)
+	fmt.Printf("Host: %s / %s / %s\n", reportData.Host.Hostname, reportData.Host.IP, reportData.Host.OS)
+	fmt.Printf("Scan completed with %d findings. Output saved to %s\n", len(displayFindings(reportData, opts.Diff)), opts.OutputRoot)
 	return nil
 }
 
@@ -177,7 +177,7 @@ func buildTimeline(findings []model.Finding) []string {
 	for i, finding := range findings {
 		when := finding.Time
 		if when == "" {
-			when = "未知时间"
+			when = "unknown"
 		}
 		lines = append(lines, fmt.Sprintf("[%d][%s][%s] %s / %s", i+1, when, severityText(finding.Severity), finding.Category, finding.Info))
 	}
@@ -194,10 +194,10 @@ func displayFindings(reportData model.ScanReport, diff bool) []model.Finding {
 func severityText(level model.Severity) string {
 	switch level {
 	case model.SeverityRisk:
-		return "风险"
+		return "RISK"
 	case model.SeveritySuspicious:
-		return "可疑"
+		return "SUSPICIOUS"
 	default:
-		return "信息"
+		return "INFO"
 	}
 }

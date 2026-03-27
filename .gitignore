@@ -1,5 +1,7 @@
 .DS_Store
 runtime/
+outbox/
 gscan
+linux_safescan
 *.out
 coverage.txt

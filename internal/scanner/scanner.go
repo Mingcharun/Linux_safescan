@@ -51,10 +51,10 @@ func (rt *Runtime) AnalyzeText(content string) string {
 		return ""
 	}
 	if CheckShell(content) {
-		return "反弹 shell 类: " + content
+		return "Reverse shell-like: " + content
 	}
 	if rt.ContainsForeignIP(content) {
-		return "境外 IP 操作类: " + content
+		return "Foreign IP activity: " + content
 	}
 	return ""
 }
@@ -94,15 +94,15 @@ func (rt *Runtime) AnalyzeFile(path string) string {
 	}
 	for _, s := range stringsFound {
 		if CheckShell(s) {
-			return "反弹 shell 类: " + s
+			return "Reverse shell-like: " + s
 		}
 		if rt.Options.Full {
 			if indicator := rt.Rules.Match(s); indicator != "" {
-				return fmt.Sprintf("恶意特征类: %s, 匹配规则: %s", s, indicator)
+				return fmt.Sprintf("Malicious signature: %s (rule: %s)", s, indicator)
 			}
 		}
 		if rt.ContainsForeignIP(s) {
-			return "境外 IP 操作类: " + s
+			return "Foreign IP activity: " + s
 		}
 	}
 	return ""

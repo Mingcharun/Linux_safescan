@@ -17,7 +17,7 @@ type webshellScanner struct{}
 // NewWebshellScanner creates the webshell scanner.
 func NewWebshellScanner() scanner.Runner { return &webshellScanner{} }
 
-func (s *webshellScanner) Name() string { return "Webshell安全检测" }
+func (s *webshellScanner) Name() string { return "Web Content Analysis" }
 
 func (s *webshellScanner) Run(ctx context.Context, rt *scanner.Runtime) ([]model.Finding, error) {
 	corpus, err := rules.LoadYaraLite(rt.Options.WebshellRules)
@@ -45,12 +45,12 @@ func (s *webshellScanner) Run(ctx context.Context, rt *scanner.Runtime) ([]model
 			}
 			findings = append(findings, model.Finding{
 				Category:  s.Name(),
-				Name:      "webshell 安全检测",
+				Name:      "Webshell signature match",
 				File:      path,
-				Info:      "文件匹配到 webshell 规则: " + strings.Join(matches, ", "),
+				Info:      "File matched webshell rules: " + strings.Join(matches, ", "),
 				Consult:   "[1] cat " + path,
 				Severity:  model.SeverityRisk,
-				Programme: "rm " + path + " # 删除 webshell 文件",
+				Programme: "rm " + path + " # remove webshell",
 				CreatedAt: time.Now(),
 			})
 			return nil

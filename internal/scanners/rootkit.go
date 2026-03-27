@@ -18,7 +18,7 @@ type rootkitScanner struct{}
 // NewRootkitScanner creates the rootkit scanner.
 func NewRootkitScanner() scanner.Runner { return &rootkitScanner{} }
 
-func (s *rootkitScanner) Name() string { return "Rootkit类安全检测" }
+func (s *rootkitScanner) Name() string { return "Rootkit Detection" }
 
 func (s *rootkitScanner) Run(ctx context.Context, rt *scanner.Runtime) ([]model.Finding, error) {
 	_ = ctx
@@ -63,9 +63,9 @@ func matchRootkitRule(rule rules.RootkitRule, kallsyms []string) (rootkitMatch, 
 		if path, ok := resolveRootkitPattern(candidate); ok {
 			return rootkitMatch{
 				path:      path,
-				info:      "匹配到名为 " + rule.Name + " 的 rootkit 文件规则: " + path,
+				info:      "Matched rootkit file rule: " + rule.Name + " -> " + path,
 				consult:   "[1] strings " + path,
-				programme: "rm " + path + " # 删除 rootkit 恶意文件",
+				programme: "rm " + path + " # remove rootkit artifact",
 			}, true
 		}
 	}
@@ -73,9 +73,9 @@ func matchRootkitRule(rule rules.RootkitRule, kallsyms []string) (rootkitMatch, 
 		if path, ok := resolveRootkitPattern(candidate); ok {
 			return rootkitMatch{
 				path:      path,
-				info:      "匹配到名为 " + rule.Name + " 的 rootkit 目录规则: " + path,
+				info:      "Matched rootkit directory rule: " + rule.Name + " -> " + path,
 				consult:   "[1] ls -a " + path,
-				programme: "rm -rf " + path + " # 删除 rootkit 恶意目录",
+				programme: "rm -rf " + path + " # remove rootkit directory",
 			}, true
 		}
 	}
@@ -84,7 +84,7 @@ func matchRootkitRule(rule rules.RootkitRule, kallsyms []string) (rootkitMatch, 
 			if strings.Contains(line, token) {
 				return rootkitMatch{
 					path:      "/proc/kallsyms",
-					info:      "匹配到名为 " + rule.Name + " 的 rootkit 内核符号表特征: " + token,
+					info:      "Matched kernel symbol indicative of " + rule.Name + ": " + token,
 					consult:   "[1] cat /proc/kallsyms",
 					programme: "",
 				}, true
@@ -135,13 +135,13 @@ func scanBadLKMs(badNames []string) []model.Finding {
 		for _, bad := range badNames {
 			if base == bad {
 				findings = append(findings, model.Finding{
-					Category:  "Rootkit类安全检测",
-					Name:      "LKM内核模块检测",
+					Category:  "Rootkit Detection",
+					Name:      "LKM module check",
 					File:      path,
-					Info:      "匹配文件具备恶意 LKM 特征: " + bad,
+					Info:      "Module matches known malicious LKM name: " + bad,
 					Consult:   "[1] ls -l " + path + " [2] strings " + path,
 					Severity:  model.SeverityRisk,
-					Programme: "rm " + path + " # 删除 rootkit 恶意文件",
+					Programme: "rm " + path + " # remove rootkit module",
 					CreatedAt: time.Now(),
 				})
 				return nil

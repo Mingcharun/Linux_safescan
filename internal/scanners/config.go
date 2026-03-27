@@ -17,7 +17,7 @@ type configScanner struct{}
 // NewConfigScanner creates the config scanner.
 func NewConfigScanner() scanner.Runner { return &configScanner{} }
 
-func (s *configScanner) Name() string { return "配置类安全检测" }
+func (s *configScanner) Name() string { return "Security Configuration" }
 
 func (s *configScanner) Run(ctx context.Context, rt *scanner.Runtime) ([]model.Finding, error) {
 	_ = ctx
@@ -40,12 +40,12 @@ func (s *configScanner) scanDNS(rt *scanner.Runtime) []model.Finding {
 		}
 		findings = append(findings, model.Finding{
 			Category:  s.Name(),
-			Name:      "DNS 安全配置",
+			Name:      "DNS configuration",
 			File:      "/etc/resolv.conf",
-			Info:      "DNS 设置为境外 IP: " + ip,
+			Info:      "DNS points to foreign IP: " + ip,
 			Consult:   "[1] cat /etc/resolv.conf",
 			Severity:  model.SeveritySuspicious,
-			Programme: "vi /etc/resolv.conf # 删除或更改境外 DNS 配置",
+			Programme: "vi /etc/resolv.conf # update DNS resolver",
 			CreatedAt: time.Now(),
 		})
 	}
@@ -70,12 +70,12 @@ func (s *configScanner) scanIPTables() []model.Finding {
 		if strings.Contains(line, "ACCEPT") {
 			findings = append(findings, model.Finding{
 				Category:  s.Name(),
-				Name:      "防火墙安全配置",
+				Name:      "Firewall configuration",
 				File:      file,
-				Info:      "存在 iptables ACCEPT 策略: " + line,
+				Info:      "Permissive iptables ACCEPT policy: " + line,
 				Consult:   "[1] cat /etc/sysconfig/iptables",
 				Severity:  model.SeveritySuspicious,
-				Programme: "vi /etc/sysconfig/iptables # 删除或更改 ACCEPT 配置",
+				Programme: "vi /etc/sysconfig/iptables # tighten ACCEPT rules",
 				CreatedAt: time.Now(),
 			})
 		}
@@ -104,12 +104,12 @@ func (s *configScanner) scanHosts(rt *scanner.Runtime) []model.Finding {
 		}
 		findings = append(findings, model.Finding{
 			Category:  s.Name(),
-			Name:      "HOSTS 安全配置",
+			Name:      "/etc/hosts configuration",
 			File:      file,
-			Info:      "存在境外 IP 设置: " + fields[0],
+			Info:      "Foreign IP present in hosts: " + fields[0],
 			Consult:   "[1] cat /etc/hosts",
 			Severity:  model.SeveritySuspicious,
-			Programme: "vi /etc/hosts # 删除或更改境外 hosts 配置",
+			Programme: "vi /etc/hosts # review entries",
 			CreatedAt: time.Now(),
 		})
 	}

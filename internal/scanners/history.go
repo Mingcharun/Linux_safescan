@@ -16,7 +16,7 @@ type historyScanner struct{}
 // NewHistoryScanner creates the history scanner.
 func NewHistoryScanner() scanner.Runner { return &historyScanner{} }
 
-func (s *historyScanner) Name() string { return "主机历史操作类安全检测" }
+func (s *historyScanner) Name() string { return "Shell History Review" }
 
 func (s *historyScanner) Run(ctx context.Context, rt *scanner.Runtime) ([]model.Finding, error) {
 	_ = ctx
@@ -44,7 +44,7 @@ func (s *historyScanner) Run(ctx context.Context, rt *scanner.Runtime) ([]model.
 				mtime, user := scanner.FileMeta(file)
 				findings = append(findings, model.Finding{
 					Category:  s.Name(),
-					Name:      "history 文件安全扫描",
+					Name:      "History file analysis",
 					File:      file,
 					Time:      mtime,
 					User:      user,

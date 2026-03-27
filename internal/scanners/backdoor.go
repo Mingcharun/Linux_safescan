@@ -17,21 +17,21 @@ type backdoorScanner struct{}
 // NewBackdoorScanner creates the backdoor scanner.
 func NewBackdoorScanner() scanner.Runner { return &backdoorScanner{} }
 
-func (s *backdoorScanner) Name() string { return "常规后门检测" }
+func (s *backdoorScanner) Name() string { return "Backdoor Checks" }
 
 func (s *backdoorScanner) Run(ctx context.Context, rt *scanner.Runtime) ([]model.Finding, error) {
 	findings := make([]model.Finding, 0)
-	findings = append(findings, s.scanShellConfigs(rt, "LD_PRELOAD 后门", "LD_PRELOAD", true)...)
-	findings = append(findings, s.scanShellConfigs(rt, "LD_AOUT_PRELOAD 后门", "LD_AOUT_PRELOAD", true)...)
-	findings = append(findings, s.scanShellConfigs(rt, "LD_ELF_PRELOAD 后门", "LD_ELF_PRELOAD", true)...)
-	findings = append(findings, s.scanShellConfigs(rt, "LD_LIBRARY_PATH 后门", "LD_LIBRARY_PATH", true)...)
-	findings = append(findings, s.scanShellConfigs(rt, "PROMPT_COMMAND 后门", "PROMPT_COMMAND", true)...)
-	findings = append(findings, s.scanShellConfigs(rt, "未知环境变量 后门", "PATH", false)...)
+	findings = append(findings, s.scanShellConfigs(rt, "LD_PRELOAD backdoor", "LD_PRELOAD", true)...)
+	findings = append(findings, s.scanShellConfigs(rt, "LD_AOUT_PRELOAD backdoor", "LD_AOUT_PRELOAD", true)...)
+	findings = append(findings, s.scanShellConfigs(rt, "LD_ELF_PRELOAD backdoor", "LD_ELF_PRELOAD", true)...)
+	findings = append(findings, s.scanShellConfigs(rt, "LD_LIBRARY_PATH backdoor", "LD_LIBRARY_PATH", true)...)
+	findings = append(findings, s.scanShellConfigs(rt, "PROMPT_COMMAND backdoor", "PROMPT_COMMAND", true)...)
+	findings = append(findings, s.scanShellConfigs(rt, "Unknown env backdoor", "PATH", false)...)
 	findings = append(findings, s.scanLDSoPreload(rt)...)
 	findings = append(findings, s.scanCron(rt)...)
 	findings = append(findings, s.scanSSHBackdoor(ctx)...)
 	findings = append(findings, s.scanSSHWrapper()...)
-	findings = append(findings, s.scanTextConfig(rt, "/etc/inetd.conf", "inetd.conf 后门")...)
+	findings = append(findings, s.scanTextConfig(rt, "/etc/inetd.conf", "inetd.conf backdoor")...)
 	findings = append(findings, s.scanXinetd(rt)...)
 	findings = append(findings, s.scanSetUID(ctx)...)
 	findings = append(findings, s.scanStartupItems(rt)...)
@@ -83,7 +83,7 @@ func (s *backdoorScanner) scanShellConfigs(rt *scanner.Runtime, name, tag string
 					Info:      trimmed,
 					Consult:   "[1] echo $" + tag + " [2] cat " + file,
 					Severity:  model.SeveritySuspicious,
-					Programme: "vi " + file + " # 删除 " + tag + " 设置",
+					Programme: "vi " + file + " # remove " + tag + " setting",
 					CreatedAt: time.Now(),
 				})
 				continue
@@ -127,12 +127,12 @@ func (s *backdoorScanner) scanLDSoPreload(rt *scanner.Runtime) []model.Finding {
 			}
 			findings = append(findings, model.Finding{
 				Category:  s.Name(),
-				Name:      "ld.so.preload 后门",
+				Name:      "ld.so.preload backdoor",
 				File:      file,
 				Info:      desc,
 				Consult:   "[1] cat /etc/ld.so.preload",
 				Severity:  model.SeverityRisk,
-				Programme: "vi /etc/ld.so.preload # 删除所有 so 设置",
+				Programme: "vi /etc/ld.so.preload # remove all shared object entries",
 				CreatedAt: time.Now(),
 			})
 		}
@@ -155,12 +155,12 @@ func (s *backdoorScanner) scanCron(rt *scanner.Runtime) []model.Finding {
 				if desc := rt.AnalyzeText(line); desc != "" {
 					findings = append(findings, model.Finding{
 						Category:  s.Name(),
-						Name:      "cron 后门",
+						Name:      "cron backdoor",
 						File:      path,
 						Info:      desc,
 						Consult:   "[1] cat " + path,
 						Severity:  model.SeverityRisk,
-						Programme: "vi " + path + " # 删除定时任务设置",
+						Programme: "vi " + path + " # remove malicious cron entry",
 						CreatedAt: time.Now(),
 					})
 				}
@@ -179,8 +179,8 @@ func (s *backdoorScanner) scanSSHBackdoor(ctx context.Context) []model.Finding {
 		}
 		findings = append(findings, model.Finding{
 			Category:  s.Name(),
-			Name:      "SSH 后门",
-			Info:      "发现非 22 端口监听的 sshd 服务: " + service,
+			Name:      "SSH backdoor",
+			Info:      "Found sshd listening on a non-22 port: " + service,
 			Consult:   "[1] ss -lntp",
 			Severity:  model.SeverityRisk,
 			CreatedAt: time.Now(),
@@ -200,12 +200,12 @@ func (s *backdoorScanner) scanSSHWrapper() []model.Finding {
 	}
 	return []model.Finding{{
 		Category:  s.Name(),
-		Name:      "SSH wrapper 后门",
+		Name:      "SSH wrapper backdoor",
 		File:      file,
-		Info:      "/usr/sbin/sshd 被篡改，文件不是标准 ELF 可执行文件",
+		Info:      "/usr/sbin/sshd is not a valid ELF executable (possible wrapper/tampering)",
 		Consult:   "[1] file /usr/sbin/sshd [2] cat /usr/sbin/sshd",
 		Severity:  model.SeverityRisk,
-		Programme: "重新安装 openssh-server 并恢复 sshd",
+		Programme: "reinstall openssh-server and restore sshd",
 		CreatedAt: time.Now(),
 	}}
 }
@@ -227,7 +227,7 @@ func (s *backdoorScanner) scanTextConfig(rt *scanner.Runtime, file string, name 
 				Info:      desc,
 				Consult:   "[1] cat " + file,
 				Severity:  model.SeverityRisk,
-				Programme: "vi " + file + " # 删除异常点",
+				Programme: "vi " + file + " # remove suspicious entries",
 				CreatedAt: time.Now(),
 			})
 		}
@@ -238,7 +238,7 @@ func (s *backdoorScanner) scanTextConfig(rt *scanner.Runtime, file string, name 
 func (s *backdoorScanner) scanXinetd(rt *scanner.Runtime) []model.Finding {
 	findings := make([]model.Finding, 0)
 	_ = scanner.WalkFiles("/etc/xinetd.d", func(path string, info os.FileInfo) error {
-		findings = append(findings, s.scanTextConfig(rt, path, "xinetd.conf 后门")...)
+		findings = append(findings, s.scanTextConfig(rt, path, "xinetd.conf backdoor")...)
 		return nil
 	})
 	return findings
@@ -264,12 +264,12 @@ func (s *backdoorScanner) scanSetUID(ctx context.Context) []model.Finding {
 		}
 		findings = append(findings, model.Finding{
 			Category:  s.Name(),
-			Name:      "setuid 后门",
+			Name:      "setuid backdoor",
 			File:      file,
-			Info:      "文件被设置了 setuid 属性，可能允许普通用户获取 root 权限: " + file,
+			Info:      "Binary has setuid bit set; may allow privilege escalation: " + file,
 			Consult:   "[1] ls -l " + file,
 			Severity:  model.SeverityRisk,
-			Programme: "chmod u-s " + file + " # 去掉 setuid 权限",
+			Programme: "chmod u-s " + file + " # remove setuid",
 			CreatedAt: time.Now(),
 		})
 	}
@@ -287,12 +287,12 @@ func (s *backdoorScanner) scanStartupItems(rt *scanner.Runtime) []model.Finding 
 			if desc := rt.AnalyzeFile(path); desc != "" {
 				findings = append(findings, model.Finding{
 					Category:  s.Name(),
-					Name:      "系统启动项后门",
+					Name:      "Startup entry backdoor",
 					File:      path,
 					Info:      desc,
 					Consult:   "[1] cat " + path,
 					Severity:  model.SeverityRisk,
-					Programme: "vi " + path + " # 删除异常点",
+					Programme: "vi " + path + " # remove suspicious entries",
 					CreatedAt: time.Now(),
 				})
 			}
@@ -302,12 +302,12 @@ func (s *backdoorScanner) scanStartupItems(rt *scanner.Runtime) []model.Finding 
 			if desc := rt.AnalyzeFile(file); desc != "" {
 				findings = append(findings, model.Finding{
 					Category:  s.Name(),
-					Name:      "系统启动项后门",
+					Name:      "Startup entry backdoor",
 					File:      file,
 					Info:      desc,
 					Consult:   "[1] cat " + file,
 					Severity:  model.SeverityRisk,
-					Programme: "vi " + file + " # 删除异常点",
+					Programme: "vi " + file + " # remove suspicious entries",
 					CreatedAt: time.Now(),
 				})
 			}

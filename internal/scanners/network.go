@@ -16,7 +16,7 @@ type networkScanner struct{}
 // NewNetworkScanner creates the network scanner.
 func NewNetworkScanner() scanner.Runner { return &networkScanner{} }
 
-func (s *networkScanner) Name() string { return "网络链接类安全检测" }
+func (s *networkScanner) Name() string { return "Network Activity" }
 
 func (s *networkScanner) Run(ctx context.Context, rt *scanner.Runtime) ([]model.Finding, error) {
 	conns := establishedConnections(ctx)
@@ -25,24 +25,24 @@ func (s *networkScanner) Run(ctx context.Context, rt *scanner.Runtime) ([]model.
 		if rt.IsForeignIP(conn.RemoteIP) {
 			findings = append(findings, model.Finding{
 				Category:  s.Name(),
-				Name:      "境外 IP 网络链接",
+				Name:      "Foreign IP connection",
 				PID:       conn.PID,
-				Info:      fmt.Sprintf("进程 %s 与境外 IP %s 通过 %s 建立连接", conn.Process, conn.RemoteIP, conn.Protocol),
+				Info:      fmt.Sprintf("Process %s established %s to foreign IP %s", conn.Process, conn.Protocol, conn.RemoteIP),
 				Consult:   "[1] ss -antp",
 				Severity:  model.SeveritySuspicious,
-				Programme: "kill " + conn.PID + " # 关闭异常链接进程",
+				Programme: "kill " + conn.PID + " # terminate process",
 				CreatedAt: time.Now(),
 			})
 		}
 		if description, ok := suspiciousPorts()[conn.RemotePort]; ok {
 			findings = append(findings, model.Finding{
 				Category:  s.Name(),
-				Name:      "可疑端口的链接",
+				Name:      "Suspicious remote port",
 				PID:       conn.PID,
-				Info:      fmt.Sprintf("进程 %s 连接了远程 IP %s 的可疑端口 %s，此端口通常被用于 %s", conn.Process, conn.RemoteIP, conn.RemotePort, description),
+				Info:      fmt.Sprintf("Process %s connected to %s:%s (typically used by %s)", conn.Process, conn.RemoteIP, conn.RemotePort, description),
 				Consult:   "[1] ss -antp",
 				Severity:  model.SeveritySuspicious,
-				Programme: "kill " + conn.PID + " # 关闭异常链接进程",
+				Programme: "kill " + conn.PID + " # terminate process",
 				CreatedAt: time.Now(),
 			})
 		}
@@ -53,11 +53,11 @@ func (s *networkScanner) Run(ctx context.Context, rt *scanner.Runtime) ([]model.
 			if strings.Contains(line, "PROMISC") {
 				findings = append(findings, model.Finding{
 					Category:  s.Name(),
-					Name:      "网卡混杂模式检测",
-					Info:      "网卡开启混杂模式: " + line,
+					Name:      "NIC promiscuous mode",
+					Info:      "Interface in promiscuous mode: " + line,
 					Consult:   "ip -o link show",
 					Severity:  model.SeveritySuspicious,
-					Programme: "ip link set dev eth0 promisc off # 关闭网卡混杂模式",
+					Programme: "ip link set dev eth0 promisc off # disable promiscuous mode",
 					CreatedAt: time.Now(),
 				})
 			}
