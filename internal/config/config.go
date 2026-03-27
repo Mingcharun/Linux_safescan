@@ -11,7 +11,7 @@ import (
 )
 
 const Version = "v0.1.0-go"
-const Author = "Mingcha_run"
+const Author = "PINGXCpost"
 const RepositoryURL = "https://github.com/Mingcharun/Linux_safescan"
 
 // Options captures CLI settings for the scanner.

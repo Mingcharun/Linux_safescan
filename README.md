@@ -310,7 +310,7 @@ go run ./cmd/linux_safescan --version
 
 ## 作者
 
-- ID: `Mingcha_run`
+- ID: `PINGXCpost`
 - GitHub: [Mingcharun](https://github.com/Mingcharun)
 
 ## 协议
